@@ -1,5 +1,6 @@
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__Hi👋__，In this section, we're going to have some fun - change the picture of the slot machine! 💡 Doesn't it feel cool? Don't worry, the whole process is very simple and doesn't require advanced programming knowledge. You can add as many pictures as you like to your slot machine as you like, whether it's the classic fruit icon 🍒🍋, any other pattern you like, or even your own creative design! Just follow the steps and you'll be able to give your slot machine a new look, making it more personalized and fun.
-Ready to make your slot machine unique? Do it with me! 👩‍💻🎨
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__Hi👋__，🎉 Congratulations on coming to the last step of your slot machine project! In this step, we'll take you step-by-step to implement a super cool feature: changing a manual stop to an automatic stop! ✨ Not only that, but we'll also show you how to implement a one-button switching feature through macro definitions, so that you can easily switch between auto and manual modes by just modifying a single number! 🎮 It's as easy as magic, making your projects more flexible and fun! 🔄
+Ready? Let's do it together! 👾  
+
 # M5StickCPlus2_Slot Project
 ## Project structure
 ``` 
@@ -23,6 +24,7 @@ Ready to make your slot machine unique? Do it with me! 👩‍💻🎨
 Software dependency: __Arduino IDE__, __VScode__ or __text__, etc.  
 Hardware requirements: __USB-C cable__, __M5StickCPlus2__, etc.  
 Dependencies: __M5StickCPlus2 library__, __Arduino library__, etc.  
+
 ### Installation of dependencies
 1、First, let's pick out 1-10 images with a clean, white or transparent background, all perfectly sized at 150x150 pixels.  
   
