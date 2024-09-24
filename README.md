@@ -26,49 +26,72 @@ Hardware requirements: __USB-C cable__, __M5StickCPlus2__, etc.
 Dependencies: __M5StickCPlus2 library__, __Arduino library__, etc.  
 
 ### Installation of dependencies
-1、First, let's pick out 1-10 images with a clean, white or transparent background, all perfectly sized at 150x150 pixels.  
-  
-2、To convert the image into a hexadecimal array in RGB565 format (where each 16-bit unit is 0X0000), we have two options for you! The first method uses Windows and the handy tool Lcdimg2. Here's the process:  
-
-Start by downloading Lcdimg2 (you can find plenty of tutorials online if needed).Set the image resolution to 48x48 (this gives you 4608 hex units in the 0X00 format).We've written a small program that takes those 4608 units and converts them into 2304 hex units in the 0X0000 format, giving you the RGB565 format we need!
-  
-3、The second option is even cooler—just use ChatGPT! Here's the plan:  Upload your image, and ChatGPT will resize it to 150x150 pixels for you.Then, it will work its magic and output the image as a .C file in RGB565 format, with each pixel in 0X0000 hexadecimal form.Fast, easy, and you get your image converted into the format you need without lifting a finger!  
-
-4、Once we have the .C file generated using either method, we’ll have a neatly structured hexadecimal binary dataset—just like the example shown. All we need to do is copy down this data, and we’re all set for the next step!
-
-![QQ_1726811953404](https://github.com/user-attachments/assets/8b591bc5-a7a5-416c-938f-9da808154194)  
-
-5、We create a new .h file in the image folder, name it as the name of the image (e.g. Ghostface.h), write the following code in the file, and save it.
+1、这次的改动主要主要是两部分，首先我们先讲第一部分，在上节的基础上更改的部分如下，我们从上至下来一一分析，首先我们定义了Automation，自动与非自动的开关。Time_Max,Time_MIN,表示停止时间的选取区间。InitTime_MAX,InitTime_MIN,表示初始停止时间的区间选取。StartCount_MAX,距离开始已经停止的最大数。
+2、接下来我们看setup(),我们添加一条srand(time(0)),给随机函数添加参数为time，在看loop()函数，首先利用Automation作为开关判断要不要自动，非自动并不需要更改，我们主要来看自动。在此段自动中主要是状态的判断是否需要停止。
 ```
-#include <Arduino.h>//Introducing the Arduino File Library
-const uint16_t PROGMEM Ghostface[] = {// The name of the array needs to match the name of the file.
-  //Copy in all the hex we just copied.
+#include "time.h"
+#define Automation 1
+#define Time_MAX 80
+#define Time_MIN 45
+#define InitTime_MAX 100
+#define InitTime_MIN 80
+#define StartCount_MAX 6
+void setup() {
+	srand(time(0));//在原有几的基础上添加的
+}
+void loop()  {
+  static int Slot_Start = 0;
+  static int Slot_Stop = 0;//判断转盘是否正在转动
+  static int Count_Stop = 0;
+  static int Count_Num;
+  if(Automation){    //自动
+  	M5.update();
+  	if (M5.BtnA.wasPressed()||Slot_Stop == 1) {
+  		if (state == SLOTS_INIT) {
+  			for (int i = 0; i < SLOT_COUNT; i++) {
+  				slots[i].start();
+  			}
+  			state++;
+        		Slot_Start = 1;//已经开始了
+        		Count_Num = rand() % (InitTime_MAX - InitTime_MIN - 1) + InitTime_MIN;//获取随机值
+  		} else if (state < SLOTS_STOP) {          
+        		Slot_Start++;//开始并且停止一列了后面与StartCount_MAX进行比较
+  			slots[state - 1].stop();    
+        		state++;
+  		}
+  	}
+    Slot_Stop = 0;//每次都重新归0，用于让随机值用于随机停止
+  }else{//非自动
+    M5.update();
+    if (M5.BtnA.wasPressed()) {
+      if (state == SLOTS_INIT) {
+        for (int i = 0; i < SLOT_COUNT; i++) {
+          slots[i].start();
+        }
+        state++;
+      } else if (state < SLOTS_STOP) {
+        slots[state - 1].stop();
+        state++;
+      }
+    }  
+  }
 }
 ```
-![QQ_1726812224766](https://github.com/user-attachments/assets/a6a0305a-0f8a-4271-a708-937936538f91)  
-
-6、Then open our slot_symbols.h file, and enter the following code.
-
+3、接下来我们看第二部分，该部分主要是针对于使得每列随机停止，该段在loop结尾处，不可改变位置，首先我们只有自动模式才需要此段代码。
 ```
-#include "Ghostface.h"//Introduce the file we just wrote
-#define SYM
-
-#define SYM_WIDTH 48    //Icon width
-#define SYM_HEIGHT 48   //Icon height
-#define SYM_COUNT 1     //Number of icons After adding icons, the number of icons needs to be increased The number of icons is the number of icons.
-
-const uint16_t *slot_symbols[] = {//The names in this array are derived from, in the .h file we wrote for the hex data
-	Ghostface//With the array name we just named, put the hexadecimal data into the slot_symbols pointer array
-};
+ if(Automation){//自动
+   if(Slot_Start < StartCount_MAX){//用于判断是否还有没停止的列
+    Count_Stop++;
+    if((Count_Stop == Count_Num)&&state < SLOTS_STOP){//当该Count_Stop等于随机数Count_Num，就表示可以停止了，表示随机延时已经结束了。但是需要确保当前状态是转动的
+      Slot_Stop = 1;//真正的停止信号
+      Count_Stop = 0;//归0 初始化
+      Count_Num = rand() % (Time_MAX - Time_MIN - 1) + Time_MIN;//为下一次取随机数
+    }
+   }else if(Slot_Start == StartCount_MAX){//当所有列已经停止了，那么归0，重新开始新的轮回
+     Slot_Start = 0;//初始化归0
+   }
+ }
 ```
-
-7、Next, open our M5StickCPlus2_slot.ino project file. We've already covered the initial setup, and now we’ll move on to changing the picture. The number represents the *slot_symbols pointer array’s hexadecimal data for each image. For example, if we use the Ghostface image and place it in the first position, then in the symbolIndices array, you would write the number 0. Why 0? Because the starting index is 0.
-So, if you have two images, you'd write 0 and 1. If three, then 0, 1, 2. Keep in mind, it’s not recommended to place the same numbers next to each other, and the values in the symbolIndices array must stay within a reasonable range.
-
-![QQ_1726813215593](https://github.com/user-attachments/assets/41581cf8-2213-48c1-bd82-9850d648586d)  
-
-8、If you need to add more than one picture, just follow the same steps as before. You can add up to 10 pictures in total.
-
 ### compile and run
 1、After completing the installation of the dependencies, open the good downloaded zip archive
 
@@ -82,8 +105,7 @@ So, if you have two images, you'd write 0 and 1. If three, then 0, 1, 2. Keep in
 
 ![QQ_1726107957719](https://github.com/user-attachments/assets/c1f953ad-5355-44e8-af0c-ac5da7542aa6)  
 
-## Next Issue Preview
-In the next update, we’ll make the final improvements to the slot machine by switching from manual to automatic stopping. With just one press, the five columns will stop in sequence, randomly, making the project more complete and much closer to the real-life slot machine experience!
+
 ## How to contact the maintainer or developer
 __OpenELAB:__   
 [![OpenELAB](https://private-user-images.githubusercontent.com/180402004/366379735-e03723c2-c213-421f-a517-e482f67f3660.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjYwNDU2NTIsIm5iZiI6MTcyNjA0NTM1MiwicGF0aCI6Ii8xODA0MDIwMDQvMzY2Mzc5NzM1LWUwMzcyM2MyLWMyMTMtNDIxZi1hNTE3LWU0ODJmNjdmMzY2MC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwOTExJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDkxMVQwOTAyMzJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1mOWE1NGE1ZDhhOTNhMjJmNTRmZmMxYTk1YzA3MDNmNTY5MzQ1NGZkNDEzMDk4OTM4MTdjM2I1ZGNmMDYzODY2JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.qnnW0ggDBwf9vP7yfAQU-oMGHnGr0-FJKsb38NDInco)](https://openelab.io)  
