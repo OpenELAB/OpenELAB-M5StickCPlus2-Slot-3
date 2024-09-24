@@ -26,8 +26,10 @@ Hardware requirements: __USB-C cable__, __M5StickCPlus2__, etc.
 Dependencies: __M5StickCPlus2 library__, __Arduino library__, etc.  
 
 ### Installation of dependencies
-1、这次的改动主要主要是两部分，首先我们先讲第一部分，在上节的基础上更改的部分如下，我们从上至下来一一分析，首先我们定义了Automation，自动与非自动的开关。Time_Max,Time_MIN,表示停止时间的选取区间。InitTime_MAX,InitTime_MIN,表示初始停止时间的区间选取。StartCount_MAX,距离开始已经停止的最大数。
-2、接下来我们看setup(),我们添加一条srand(time(0)),给随机函数添加参数为time，在看loop()函数，首先利用Automation作为开关判断要不要自动，非自动并不需要更改，我们主要来看自动。在此段自动中主要是状态的判断是否需要停止。
+1、这次的改动主要主要是两部分，首先我们先讲第一部分，在上节的基础上更改的部分如下，我们从上至下来一一分析，首先我们定义了Automation，自动与非自动的开关。Time_Max,Time_MIN,表示停止时间的选取区间。InitTime_MAX,InitTime_MIN,表示初始停止时间的区间选取。StartCount_MAX,距离开始已经停止的最大数。  
+
+2、接下来我们看setup(),我们添加一条srand(time(0)),给随机函数添加参数为time，在看loop()函数，首先利用Automation作为开关判断要不要自动，非自动并不需要更改，我们主要来看自动。在此段自动中主要是状态的判断是否需要停止。  
+
 ```
 #include "time.h"
 #define Automation 1
@@ -77,7 +79,8 @@ void loop()  {
   }
 }
 ```
-3、接下来我们看第二部分，该部分主要是针对于使得每列随机停止，该段在loop结尾处，不可改变位置，首先我们只有自动模式才需要此段代码。
+3、接下来我们看第二部分，该部分主要是针对于使得每列随机停止，该段在loop结尾处，不可改变位置，首先我们只有自动模式才需要此段代码。  
+
 ```
  if(Automation){//自动
    if(Slot_Start < StartCount_MAX){//用于判断是否还有没停止的列
