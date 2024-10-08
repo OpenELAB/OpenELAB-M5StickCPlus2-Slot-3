@@ -117,8 +117,6 @@ if (Automation) { // If in automatic mode
 ## How to contact the maintainer or developer
 __OpenELAB:__   
 [![OpenELAB_logo_resized_150](https://github.com/user-attachments/assets/5d3de375-359c-46a3-96bb-aaa211c6c636)](https://openelab.io)  
-
-
 __YouTube:__  
 [![youtube_logo_200x150](https://github.com/user-attachments/assets/d2365e7f-4ffe-4124-bf62-21eba19a71e4)](https://www.youtube.com/@OpenELAB)  
 __X :__  
