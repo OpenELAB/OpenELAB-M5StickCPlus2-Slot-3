@@ -103,7 +103,7 @@ if (Automation) { // If in automatic mode
 ### compile and run
 1、After completing the installation of the dependencies, open the good downloaded zip archive
 
-![QQ_1726107516108](https://github.com/user-attachments/assets/cb2362f7-1871-418e-94dd-92ddfe7284b7)  
+![image](https://github.com/user-attachments/assets/1c934a3c-6305-4c4b-9edd-ddb614217787)  
 
 2、Connect the Plus2 to your computer using USB-C, select Tools->Port to choose your own port
 
